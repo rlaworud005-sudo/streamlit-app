@@ -2,12 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
-import koreanize_matplotlib  # 한글 깨짐 방지 라이브러리
 
-# 1. 페이지 및 다크 스타일 설정
+# 1. 한글 폰트 설정 (기본 폰트 사용으로 에러 방지)
+plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'sans-serif']
+plt.rcParams['axes.unicode_minus'] = False
+
+# 2. 페이지 및 다크 스타일 설정
 st.set_page_config(page_title="온도 제어 시뮬레이터", layout="wide")
 
-# 다크 모드 스타일 커스텀
 st.markdown("""
     <style>
     .stApp {
@@ -20,7 +22,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. 사이드바 입력 설정
+# 3. 사이드바 입력 설정
 st.sidebar.header("⚙️ 공정 변수")
 SP = st.sidebar.number_input("목표 온도 (Set Point, °C)", value=1000.0, step=10.0)
 delay_time = st.sidebar.number_input("시간 지연 (L, 초)", value=30, step=1)
@@ -39,7 +41,7 @@ show_p = st.sidebar.checkbox("P 온도", value=True)
 show_pid = st.sidebar.checkbox("PID 온도", value=True)
 show_sp = st.sidebar.checkbox("설정값", value=True)
 
-# 3. 시뮬레이션 로직
+# 4. 시뮬레이션 로직
 n_steps = int(total_time / dt) + 1
 t = np.linspace(0, total_time, n_steps)
 T0 = 25.0
@@ -89,41 +91,41 @@ T_onoff, u_onoff = run_sim('on_off')
 T_p, u_p = run_sim('P', Kc=Kc_user)
 T_pid, u_pid = run_sim('PID', Kc=Kc_user, tau_I=tau_I_user, tau_D=tau_D_user)
 
-# 4. 화면 구성 (타이틀 및 탭)
+# 5. 화면 구성 (타이틀 및 탭)
 st.title("온도 제어 시뮬레이터")
-st.caption("FOPDT 공정에서 온오프, P, PID 제어를 비교합니다. 왼쪽 값을 바꾸면 그래프가 즉시 갱신됩니다.")
+st.caption("FOPDT 공정에서 On-Off, P, PID 제어를 비교합니다.")
 
 tab1, tab2 = st.tabs(["📈 그래프 화면", "📋 수치표"])
 
 with tab1:
     col1, col2 = st.columns(2)
     
-    # [1] 온오프 전체
+    # [1] On-Off 전체
     with col1:
         fig1, ax1 = plt.subplots(figsize=(6, 3.8), facecolor='#0e1117')
         ax1.set_facecolor('#0e1117')
         if show_onoff:
-            ax1.plot(t/60, T_onoff, color='#1f77b4', label='온오프')
+            ax1.plot(t/60, T_onoff, color='#1f77b4', label='On-Off')
         if show_sp:
-            ax1.axhline(SP, color='red', linestyle='--', label='설정값')
-        ax1.set_title("1. 온오프 전체", color='white')
-        ax1.set_xlabel("시간 (분)", color='white')
-        ax1.set_ylabel("온도 (°C)", color='white')
+            ax1.axhline(SP, color='red', linestyle='--', label='Set Point')
+        ax1.set_title("1. On-Off Control", color='white')
+        ax1.set_xlabel("Time (min)", color='white')
+        ax1.set_ylabel("Temp (C)", color='white')
         ax1.tick_params(colors='white')
         ax1.grid(True, color='#333333', linestyle=':')
         ax1.legend(facecolor='#1e222a', edgecolor='none', labelcolor='white')
         st.pyplot(fig1)
 
-    # [2] 온오프 확대 (40~70분)
+    # [2] On-Off 확대 (40~70분)
     with col2:
         fig2, ax2 = plt.subplots(figsize=(6, 3.8), facecolor='#0e1117')
         ax2.set_facecolor('#0e1117')
         idx1, idx2 = int(2400/dt), int(4200/dt)
         if show_onoff:
             ax2.plot(t[idx1:idx2]/60, T_onoff[idx1:idx2], color='#1f77b4')
-        ax2.set_title("2. 온오프 확대 (40~70분)", color='white')
-        ax2.set_xlabel("시간 (분)", color='white')
-        ax2.set_ylabel("온도 (°C)", color='white')
+        ax2.set_title("2. On-Off Zoom (40~70 min)", color='white')
+        ax2.set_xlabel("Time (min)", color='white')
+        ax2.set_ylabel("Temp (C)", color='white')
         ax2.tick_params(colors='white')
         ax2.grid(True, color='#333333', linestyle=':')
         st.pyplot(fig2)
@@ -132,17 +134,17 @@ with tab1:
     fig3, ax3 = plt.subplots(figsize=(12, 4.5), facecolor='#0e1117')
     ax3.set_facecolor('#0e1117')
     if show_onoff:
-        ax3.plot(t/60, T_onoff, label='온오프', color='#1f77b4', alpha=0.6)
+        ax3.plot(t/60, T_onoff, label='On-Off', color='#1f77b4', alpha=0.6)
     if show_p:
-        ax3.plot(t/60, T_p, label='P 제어', color='#ff7f0e')
+        ax3.plot(t/60, T_p, label='P Control', color='#ff7f0e')
     if show_pid:
-        ax3.plot(t/60, T_pid, label='PID 제어', color='#2ca02c')
+        ax3.plot(t/60, T_pid, label='PID Control', color='#2ca02c')
     if show_sp:
-        ax3.axhline(SP, color='white', linestyle='--', label='설정값')
+        ax3.axhline(SP, color='white', linestyle='--', label='Set Point')
     
-    ax3.set_title("3. 세 제어기 온도 비교", color='white')
-    ax3.set_xlabel("시간 (분)", color='white')
-    ax3.set_ylabel("온도 (°C)", color='white')
+    ax3.set_title("3. Controller Comparison", color='white')
+    ax3.set_xlabel("Time (min)", color='white')
+    ax3.set_ylabel("Temp (C)", color='white')
     ax3.set_ylim(750, 1100)
     ax3.tick_params(colors='white')
     ax3.grid(True, color='#333333', linestyle=':')
@@ -152,14 +154,14 @@ with tab1:
 with tab2:
     st.subheader("시간별 시뮬레이션 수치")
     df = pd.DataFrame({
-        '시간(s)': t,
-        '온도(SP)': SP,
-        '온오프 온도(°C)': T_onoff,
-        '온오프 히터 출력(%)': u_onoff,
-        'P 온도(°C)': T_p,
-        'P 히터 출력(%)': u_p,
-        'PID 온도(°C)': T_pid,
-        'PID 히터 출력(%)': u_pid
+        'Time(s)': t,
+        'SP': SP,
+        'OnOff_Temp(C)': T_onoff,
+        'OnOff_Heater(%)': u_onoff,
+        'P_Temp(C)': T_p,
+        'P_Heater(%)': u_p,
+        'PID_Temp(C)': T_pid,
+        'PID_Heater(%)': u_pid
     })
     st.dataframe(df, use_container_width=True)
 

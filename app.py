@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
+import koreanize_matplotlib  # 한글 깨짐 방지 라이브러리
 
 # 1. 페이지 및 다크 스타일 설정
 st.set_page_config(page_title="온도 제어 시뮬레이터", layout="wide")
@@ -99,12 +100,12 @@ with tab1:
     
     # [1] 온오프 전체
     with col1:
-        fig1, ax1 = plt.subplots(figsize=(6, 3.5), facecolor='#0e1117')
+        fig1, ax1 = plt.subplots(figsize=(6, 3.8), facecolor='#0e1117')
         ax1.set_facecolor('#0e1117')
         if show_onoff:
-            ax1.plot(t/60, T_onoff, color='#1f77b4', label='On-Off')
+            ax1.plot(t/60, T_onoff, color='#1f77b4', label='온오프')
         if show_sp:
-            ax1.axhline(SP, color='red', linestyle='--', label='SP')
+            ax1.axhline(SP, color='red', linestyle='--', label='설정값')
         ax1.set_title("1. 온오프 전체", color='white')
         ax1.set_xlabel("시간 (분)", color='white')
         ax1.set_ylabel("온도 (°C)", color='white')
@@ -115,7 +116,7 @@ with tab1:
 
     # [2] 온오프 확대 (40~70분)
     with col2:
-        fig2, ax2 = plt.subplots(figsize=(6, 3.5), facecolor='#0e1117')
+        fig2, ax2 = plt.subplots(figsize=(6, 3.8), facecolor='#0e1117')
         ax2.set_facecolor('#0e1117')
         idx1, idx2 = int(2400/dt), int(4200/dt)
         if show_onoff:
@@ -128,14 +129,14 @@ with tab1:
         st.pyplot(fig2)
 
     # [3] 세 제어기 온도 비교
-    fig3, ax3 = plt.subplots(figsize=(12, 4), facecolor='#0e1117')
+    fig3, ax3 = plt.subplots(figsize=(12, 4.5), facecolor='#0e1117')
     ax3.set_facecolor('#0e1117')
     if show_onoff:
         ax3.plot(t/60, T_onoff, label='온오프', color='#1f77b4', alpha=0.6)
     if show_p:
-        ax3.plot(t/60, T_p, label='P', color='#ff7f0e')
+        ax3.plot(t/60, T_p, label='P 제어', color='#ff7f0e')
     if show_pid:
-        ax3.plot(t/60, T_pid, label='PID', color='#2ca02c')
+        ax3.plot(t/60, T_pid, label='PID 제어', color='#2ca02c')
     if show_sp:
         ax3.axhline(SP, color='white', linestyle='--', label='설정값')
     
@@ -162,7 +163,7 @@ with tab2:
     })
     st.dataframe(df, use_container_width=True)
 
-    csv_data = df.to_csv(index=False).encode('utf-8')
+    csv_data = df.to_csv(index=False).encode('utf-8-sig')
     st.download_button(
         label="📥 CSV 결과 파일 다운로드",
         data=csv_data,

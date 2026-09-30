@@ -3,24 +3,40 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 
-# 1. 페이지 및 스타일 설정
+# 1. 페이지 및 스타일 설정 (화이트 테마 + 가독성 최적화)
 st.set_page_config(page_title="온도 제어 시뮬레이터", layout="wide")
 
-# 사이드바 라벨 및 입력창 글자 색상/배경 강제 설정 (가독성 개선)
 st.markdown("""
     <style>
-    /* 사이드바 글자 색상 고정 */
+    /* 전체 배경을 흰색으로 변경 및 기본 글자색 검은색 설정 */
+    .stApp {
+        background-color: #ffffff !important;
+        color: #111111 !important;
+    }
+    
+    /* 사이드바 배경 및 글자색 설정 */
+    [data-testid="stSidebar"] {
+        background-color: #f8f9fa !important;
+        border-right: 1px solid #e0e0e0;
+    }
     [data-testid="stSidebar"] label, 
     [data-testid="stSidebar"] .stMarkdown,
     [data-testid="stSidebar"] h1, 
     [data-testid="stSidebar"] h2, 
-    [data-testid="stSidebar"] h3 {
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] span {
         color: #111111 !important;
-        font-weight: bold !important;
+        font-weight: 600 !important;
     }
     
-    /* 입력창 내부 텍스트 색상 고정 */
+    /* 입력창 내부 텍스트 및 배경 설정 */
     [data-testid="stSidebar"] input {
+        color: #111111 !important;
+        background-color: #ffffff !important;
+    }
+    
+    /* 본문 제목 및 캡션 색상 */
+    h1, h2, h3, p, .stCaption {
         color: #111111 !important;
     }
     </style>
@@ -104,46 +120,55 @@ tab1, tab2 = st.tabs(["📈 그래프 화면", "📋 수치표"])
 with tab1:
     col1, col2 = st.columns(2)
     
+    # [1] On-Off 전체 그래프
     with col1:
-        fig1, ax1 = plt.subplots(figsize=(6, 3.8))
+        fig1, ax1 = plt.subplots(figsize=(6, 3.8), facecolor='#ffffff')
+        ax1.set_facecolor('#ffffff')
         if show_onoff:
-            ax1.plot(t/60, T_onoff, label='On-Off')
+            ax1.plot(t/60, T_onoff, color='#1f77b4', label='On-Off')
         if show_sp:
             ax1.axhline(SP, color='red', linestyle='--', label='Set Point')
-        ax1.set_title("1. On-Off Control")
-        ax1.set_xlabel("Time (min)")
-        ax1.set_ylabel("Temp (C)")
-        ax1.grid(True, linestyle=':')
-        ax1.legend()
+        ax1.set_title("1. On-Off Control", color='#111111')
+        ax1.set_xlabel("Time (min)", color='#111111')
+        ax1.set_ylabel("Temp (C)", color='#111111')
+        ax1.tick_params(colors='#111111')
+        ax1.grid(True, linestyle=':', color='#cccccc')
+        ax1.legend(facecolor='#ffffff', edgecolor='#cccccc', labelcolor='#111111')
         st.pyplot(fig1)
 
+    # [2] On-Off 확대 그래프
     with col2:
-        fig2, ax2 = plt.subplots(figsize=(6, 3.8))
+        fig2, ax2 = plt.subplots(figsize=(6, 3.8), facecolor='#ffffff')
+        ax2.set_facecolor('#ffffff')
         idx1, idx2 = int(2400/dt), int(4200/dt)
         if show_onoff:
-            ax2.plot(t[idx1:idx2]/60, T_onoff[idx1:idx2])
-        ax2.set_title("2. On-Off Zoom (40~70 min)")
-        ax2.set_xlabel("Time (min)")
-        ax2.set_ylabel("Temp (C)")
-        ax2.grid(True, linestyle=':')
+            ax2.plot(t[idx1:idx2]/60, T_onoff[idx1:idx2], color='#1f77b4')
+        ax2.set_title("2. On-Off Zoom (40~70 min)", color='#111111')
+        ax2.set_xlabel("Time (min)", color='#111111')
+        ax2.set_ylabel("Temp (C)", color='#111111')
+        ax2.tick_params(colors='#111111')
+        ax2.grid(True, linestyle=':', color='#cccccc')
         st.pyplot(fig2)
 
-    fig3, ax3 = plt.subplots(figsize=(12, 4.5))
+    # [3] 제어기 비교 그래프
+    fig3, ax3 = plt.subplots(figsize=(12, 4.5), facecolor='#ffffff')
+    ax3.set_facecolor('#ffffff')
     if show_onoff:
-        ax3.plot(t/60, T_onoff, label='On-Off', alpha=0.6)
+        ax3.plot(t/60, T_onoff, label='On-Off', color='#1f77b4', alpha=0.6)
     if show_p:
-        ax3.plot(t/60, T_p, label='P Control')
+        ax3.plot(t/60, T_p, label='P Control', color='#ff7f0e')
     if show_pid:
-        ax3.plot(t/60, T_pid, label='PID Control')
+        ax3.plot(t/60, T_pid, label='PID Control', color='#2ca02c')
     if show_sp:
         ax3.axhline(SP, color='red', linestyle='--', label='Set Point')
     
-    ax3.set_title("3. Controller Comparison")
-    ax3.set_xlabel("Time (min)")
-    ax3.set_ylabel("Temp (C)")
+    ax3.set_title("3. Controller Comparison", color='#111111')
+    ax3.set_xlabel("Time (min)", color='#111111')
+    ax3.set_ylabel("Temp (C)", color='#111111')
     ax3.set_ylim(750, 1100)
-    ax3.grid(True, linestyle=':')
-    ax3.legend()
+    ax3.tick_params(colors='#111111')
+    ax3.grid(True, linestyle=':', color='#cccccc')
+    ax3.legend(facecolor='#ffffff', edgecolor='#cccccc', labelcolor='#111111')
     st.pyplot(fig3)
 
 with tab2:
